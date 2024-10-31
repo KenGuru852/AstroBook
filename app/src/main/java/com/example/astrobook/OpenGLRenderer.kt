@@ -1,6 +1,7 @@
 package com.example.astrobook
 
 import android.content.Context
+import android.content.Intent
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
@@ -203,10 +204,6 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
             // Масштабирование куба
             Matrix.scaleM(cubeMatrix, 0, 1f, 1f, 1f) // Уменьшение размера куба
 
-            // Умножение на видовую и проекционную матрицы
-            //Matrix.multiplyMM(cubeMatrix, 0, viewMatrix, 0, cubeMatrix, 0)
-            //Matrix.multiplyMM(cubeMatrix, 0, projectionMatrix, 0, cubeMatrix, 0)
-
             // Отрисовка куба
             val cube = Cube(context)
             cube.draw(cubeMatrix)
@@ -214,11 +211,11 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     fun selectNextPlanet() {
-        selectedPlanetIndex = (selectedPlanetIndex + 1) % 8
+        selectedPlanetIndex = (selectedPlanetIndex + 1) % 9
     }
 
     fun selectPreviousPlanet() {
-        selectedPlanetIndex = (selectedPlanetIndex - 1 + 8) % 8
+        selectedPlanetIndex = (selectedPlanetIndex - 1 + 9) % 9
     }
 
     fun showPlanetInfo() {
@@ -231,11 +228,17 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
             5 -> "Сатурн"
             6 -> "Уран"
             7 -> "Нептун"
+            8 -> "Луна"
             else -> "Неизвестная планета"
         }
 
-        // Пример отображения информации через Toast
-        Toast.makeText(context, "Информация о планете: $planetName", Toast.LENGTH_SHORT).show()
+        if (selectedPlanetIndex == 8) { // Предположим, что Луна имеет индекс 8
+            val intent = Intent(context, MoonActivity::class.java)
+            context.startActivity(intent)
+        } else {
+            // Пример отображения информации через Toast
+            Toast.makeText(context, "Информация о планете: $planetName", Toast.LENGTH_SHORT).show()
+        }
     }
 
     private fun drawMoonPerpendicularToEcliptic(earthMatrix: FloatArray, angle: Float) {
@@ -259,10 +262,30 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         Matrix.multiplyMM(moonMatrix, 0, viewMatrix, 0, moonMatrix, 0)
         Matrix.multiplyMM(moonMatrix, 0, projectionMatrix, 0, moonMatrix, 0)
 
-        Matrix.scaleM(moonMatrix, 0, 1.5f, 1.5f, 1.5f) // Увеличение Луны
+        // Масштабирование Луны
+        Matrix.scaleM(moonMatrix, 0, 0.1f, 0.1f, 0.1f)
 
         // Отрисовка Луны
         moon.draw(moonMatrix)
+
+        // Если Луна выбрана, отрисовываем куб
+        if (selectedPlanetIndex == 8) {
+            val cubeMatrix = FloatArray(16)
+            Matrix.setIdentityM(cubeMatrix, 0)
+
+            // Перемещение куба на расстояние от Луны
+            Matrix.translateM(cubeMatrix, 0, 0f, 0f, 0f) // Расстояние от Луны
+
+            // Умножение на матрицу Луны
+            Matrix.multiplyMM(cubeMatrix, 0, moonMatrix, 0, cubeMatrix, 0)
+
+            // Масштабирование куба
+            Matrix.scaleM(cubeMatrix, 0, 1f, 1f, 1f) // Уменьшение размера куба
+
+            // Отрисовка куба
+            val cube = Cube(context)
+            cube.draw(cubeMatrix)
+        }
     }
 
     private fun drawPlanet(planet: TexturedSphere, rotationSpeed: Float, distanceFromSun: Float, angle: Float, depthZ: Float, scale: Float) {
