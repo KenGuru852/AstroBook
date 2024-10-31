@@ -33,14 +33,25 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
     private val planetRotations = floatArrayOf(1.0f, 0.9f, 0.8f, 0.5f, 0.4f, 0.3f, 0.2f, 0.1f) // Скорости вращения планет
     private val planetDistances = floatArrayOf(
-        3.5f,   // Меркурий - самая близкая
-        4.5f,   // Венера
-        5.5f,   // Земля
-        6.5f,   // Марс
-        8.5f,   // Юпитер
-        10.5f,  // Сатурн
-        12.5f,  // Уран
-        14.5f   // Нептун - самая дальняя
+        3.2f,   // Меркурий - самая близкая
+        3.7f,   // Венера
+        4.4f,   // Земля
+        5.3f,   // Марс
+        6.7f,   // Юпитер
+        9.5f,   // Сатурн
+        11.0f,  // Уран
+        12.5f   // Нептун - самая дальняя
+    )
+
+    private val planetScales = floatArrayOf(
+        0.4f,   // Меркурий
+        0.5f,   // Венера
+        0.55f,  // Земля
+        0.6f,   // Марс
+        1.0f,   // Юпитер
+        0.9f,   // Сатурн
+        0.8f,   // Уран
+        0.7f    // Нептун
     )
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
@@ -50,7 +61,7 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
         // Инициализация фона и объектов
         square = Square(context)
-        sunCircle = TexturedSphere(context, 1.0f, 80, 40)
+        sunCircle = TexturedSphere(context, 0.8f, 80, 40) // Уменьшение размера Солнца
 
         // Инициализация планет с радиусами и текстурами
         mars = TexturedSphere(context, 0.5f, 40, 20)
@@ -84,29 +95,39 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
     }
 
     override fun onDrawFrame(gl: GL10?) {
-        // Очистка буфера кадра и глубинного буфера
+        // Clear the frame and depth buffer
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
 
+        // Set up the camera
+        Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, 1f, 0f, 0f, 0f, 0f, 1f, 0f)
+
+        // Model-view-projection matrix
+        Matrix.multiplyMM(mvpMatrix, 0, projectionMatrix, 0, viewMatrix, 0)
+
+        // Draw the background without depth testing
+        GLES20.glDisable(GLES20.GL_DEPTH_TEST)
+        square.draw(mvpMatrix)
+        GLES20.glEnable(GLES20.GL_DEPTH_TEST)
+
         // Настройка камеры
-        Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, 10f, 0f, 0f, 0f, 0f, 1f, 0f)
+        Matrix.setLookAtM(viewMatrix, 0, 0f, 20f, 20f, 0f, 0f, 0f, 0f, 1f, 0f)
 
         // Увеличение угла вращения
         angleX += 1f
-        sunRotationAngle += 0.1f // Увеличение угла вращения Солнца
+        sunRotationAngle += 0.3f // Увеличение угла вращения Солнца
 
         // Модельно-видовая-пространственная матрица
-        Matrix.multiplyMM(mvpMatrix, 0, projectionMatrix, 0, viewMatrix, 0)
-        square.draw(projectionMatrix, viewMatrix)
+        //Matrix.multiplyMM(mvpMatrix, 0, projectionMatrix, 0, viewMatrix, 0)
 
-        drawPlanet(mercury, planetRotations[0], planetDistances[0], angleX, -4.5f, 1.5f)
-        drawPlanet(venus, -planetRotations[1], planetDistances[1], angleX, -5.0f, 1.5f)
+        drawPlanet(mercury, planetRotations[0], planetDistances[0], angleX, 0f, planetScales[0])
+        drawPlanet(venus, -planetRotations[1], planetDistances[1], angleX, 0f, planetScales[1])
 
         // Матрица Земли
         val earthMatrix = FloatArray(16)
         Matrix.setIdentityM(earthMatrix, 0)
 
         // Земля вращается вокруг своей оси и находится на расстоянии от Солнца
-        Matrix.translateM(earthMatrix, 0, 0f, 0f, -5.5f)
+        Matrix.translateM(earthMatrix, 0, 0f, 0f, 0f)
         Matrix.rotateM(earthMatrix, 0, angleX * planetRotations[2], 0f, 1f, 0f)
         Matrix.translateM(earthMatrix, 0, planetDistances[2], 0f, 0f)
 
@@ -116,23 +137,23 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         Matrix.multiplyMM(earthFinalMatrix, 0, projectionMatrix, 0, earthFinalMatrix, 0)
 
         // Отрисовка Земли
-        drawPlanet(earth, planetRotations[2], planetDistances[2], angleX, -5.5f, 1.5f)
+        drawPlanet(earth, planetRotations[2], planetDistances[2], angleX, 0f, planetScales[2])
         // Отрисовка Луны
         drawMoonPerpendicularToEcliptic(earthMatrix, angleX)
 
         // Остальные планеты
-        drawPlanet(mars, planetRotations[3], planetDistances[3], angleX, -6.0f, 2.5f)
-        drawPlanet(saturn, planetRotations[4], planetDistances[4], angleX, -6.5f, 2.5f)
-        drawPlanet(jupiter, planetRotations[5], planetDistances[5], angleX, -7.0f, 2.5f)
-        drawPlanet(neptune, planetRotations[6], planetDistances[6], angleX, -7.5f, 2.5f)
-        drawPlanet(uranus, -planetRotations[7], planetDistances[7], angleX, -8.0f, 2.5f)
+        drawPlanet(mars, planetRotations[3], planetDistances[3], angleX, 0f, planetScales[3])
+        drawPlanet(saturn, planetRotations[4], planetDistances[5], angleX, 0f, planetScales[4])
+        drawPlanet(jupiter, planetRotations[5], planetDistances[4], angleX, 0f, planetScales[5])
+        drawPlanet(neptune, planetRotations[6], planetDistances[6], angleX, 0f, planetScales[6])
+        drawPlanet(uranus, -planetRotations[7], planetDistances[7], angleX, 0f, planetScales[7])
 
         // Отрисовка Солнца
         val sunMatrix = FloatArray(16)
         Matrix.setIdentityM(sunMatrix, 0)
-        Matrix.translateM(sunMatrix, 0, 0f, 0f, -5.0f) // Солнце ближе к камере
+        Matrix.translateM(sunMatrix, 0, 0f, 0f, 0f) // Солнце в центре
         Matrix.rotateM(sunMatrix, 0, sunRotationAngle, 0f, 1f, 0f) // Вращение Солнца вокруг своей оси
-        Matrix.scaleM(sunMatrix, 0, 3.0f, 3.0f, 3.0f) // Увеличение размера Солнца
+        Matrix.scaleM(sunMatrix, 0, 2.5f, 2.5f, 2.5f) // Уменьшение размера Солнца
         Matrix.multiplyMM(sunMatrix, 0, viewMatrix, 0, sunMatrix, 0)
         Matrix.multiplyMM(sunMatrix, 0, projectionMatrix, 0, sunMatrix, 0)
         sunCircle.draw(sunMatrix)
@@ -147,7 +168,7 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         Matrix.rotateM(moonMatrix, 0, angle * 2f, 1f, 0f, 0f)  // Вращение по оси X
 
         // Перемещение Луны на орбиту (расстояние от Земли)
-        Matrix.translateM(moonMatrix, 0, 0f, 0f, 1.5f)  // Луна на расстоянии 1.5f от Земли по оси Z
+        Matrix.translateM(moonMatrix, 0, 0f, 0f, 0.5f)  // Луна на расстоянии 1.5f от Земли по оси Z
 
         // Умножение на матрицу Земли (чтобы Луна вращалась вокруг Земли)
         Matrix.multiplyMM(moonMatrix, 0, earthMatrix, 0, moonMatrix, 0)
