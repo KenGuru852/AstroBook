@@ -21,26 +21,40 @@ class TexturedSphere(
     var angle: Float = 0f
 
     private val vertexShaderCode = """
-        attribute vec4 vPosition;
-        attribute vec2 aTexCoord;
-        varying vec2 vTexCoord;
-        uniform mat4 uMVPMatrix;
+    attribute vec4 vPosition;
+    attribute vec3 vNormal;
+    attribute vec2 aTexCoord;
+    varying vec2 vTexCoord;
+    varying vec3 vLighting;
+    uniform mat4 uMVPMatrix;
+    uniform mat4 uMVMatrix;
+    uniform vec3 uLightPos;
 
-        void main() {
-            gl_Position = uMVPMatrix * vPosition;
-            vTexCoord = aTexCoord;
-        }
-    """.trimIndent()
+    void main() {
+        gl_Position = uMVPMatrix * vPosition;
+        vTexCoord = aTexCoord;
+
+        // Вычисление освещения по модели Фонга
+        vec3 ambientLight = vec3(0.3, 0.3, 0.3);
+        vec3 directionalLightColor = vec3(1, 1, 1);
+        vec3 transformedNormal = normalize((uMVMatrix * vec4(vNormal, 0.0)).xyz);
+        vec3 lightDirection = normalize(uLightPos - (uMVMatrix * vPosition).xyz);
+        float directional = max(dot(transformedNormal, lightDirection), 0.0);
+        vLighting = ambientLight + (directionalLightColor * directional);
+    }
+""".trimIndent()
 
     private val fragmentShaderCode = """
-        precision mediump float;
-        varying vec2 vTexCoord;
-        uniform sampler2D uTexture;
+    precision mediump float;
+    varying vec2 vTexCoord;
+    varying vec3 vLighting;
+    uniform sampler2D uTexture;
 
-        void main() {
-            gl_FragColor = texture2D(uTexture, vTexCoord);
-        }
-    """.trimIndent()
+    void main() {
+        vec4 texColor = texture2D(uTexture, vTexCoord);
+        gl_FragColor = vec4(texColor.rgb * vLighting, texColor.a);
+    }
+""".trimIndent()
 
     private var program: Int
 
@@ -67,15 +81,25 @@ class TexturedSphere(
     private val textureBuffer: FloatBuffer
     private val textureHandle = IntArray(1)
     private val indices: ShortArray
+    private val normalBuffer: FloatBuffer
+    private val lightPos = floatArrayOf(0.0f, 0.0f, 5.0f) // Позиция источника света
 
     init {
         val vertices = generateSphereVertices(radius, segments, rings)
+        val normals = generateSphereNormals(vertices)
         val texCoords = generateSphereTexCoords(segments, rings)
 
         val bb = ByteBuffer.allocateDirect(vertices.size * 4)
         bb.order(ByteOrder.nativeOrder())
         vertexBuffer = bb.asFloatBuffer().apply {
             put(vertices)
+            position(0)
+        }
+
+        val nb = ByteBuffer.allocateDirect(normals.size * 4)
+        nb.order(ByteOrder.nativeOrder())
+        normalBuffer = nb.asFloatBuffer().apply {
+            put(normals)
             position(0)
         }
 
@@ -95,6 +119,20 @@ class TexturedSphere(
         }
 
         loadTexture(R.drawable.ksun)
+    }
+
+    private fun generateSphereNormals(vertices: FloatArray): FloatArray {
+        val normals = FloatArray(vertices.size)
+        for (i in vertices.indices step 3) {
+            val x = vertices[i]
+            val y = vertices[i + 1]
+            val z = vertices[i + 2]
+            val length = sqrt(x * x + y * y + z * z)
+            normals[i] = x / length
+            normals[i + 1] = y / length
+            normals[i + 2] = z / length
+        }
+        return normals
     }
 
     private fun generateSphereIndices(segments: Int, rings: Int): ShortArray {
@@ -133,7 +171,7 @@ class TexturedSphere(
         }
     }
 
-    fun draw(mvpMatrix: FloatArray) {
+    fun draw(mvpMatrix: FloatArray, useLighting: Boolean = true) {
         GLES20.glUseProgram(program)
 
         val positionHandle = GLES20.glGetAttribLocation(program, "vPosition")
@@ -152,10 +190,25 @@ class TexturedSphere(
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0])
         GLES20.glUniform1i(textureUniformHandle, 0)
 
+        if (useLighting) {
+            val normalHandle = GLES20.glGetAttribLocation(program, "vNormal")
+            val mvMatrixHandle = GLES20.glGetUniformLocation(program, "uMVMatrix")
+            val lightPosHandle = GLES20.glGetUniformLocation(program, "uLightPos")
+
+            GLES20.glEnableVertexAttribArray(normalHandle)
+            GLES20.glVertexAttribPointer(normalHandle, 3, GLES20.GL_FLOAT, false, 12, normalBuffer)
+
+            GLES20.glUniformMatrix4fv(mvMatrixHandle, 1, false, mvpMatrix, 0)
+            GLES20.glUniform3fv(lightPosHandle, 1, lightPos, 0)
+        }
+
         GLES20.glDrawElements(GLES20.GL_TRIANGLES, indices.size, GLES20.GL_UNSIGNED_SHORT, indexBuffer)
 
         GLES20.glDisableVertexAttribArray(positionHandle)
         GLES20.glDisableVertexAttribArray(texCoordHandle)
+        if (useLighting) {
+            GLES20.glDisableVertexAttribArray(GLES20.glGetAttribLocation(program, "vNormal"))
+        }
     }
 
     private fun generateSphereVertices(radius: Float, segments: Int, rings: Int): FloatArray {
