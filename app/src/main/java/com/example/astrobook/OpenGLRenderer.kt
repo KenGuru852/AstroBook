@@ -4,6 +4,7 @@ import android.content.Context
 import android.opengl.GLES20
 import android.opengl.GLSurfaceView
 import android.opengl.Matrix
+import android.widget.Toast
 import javax.microedition.khronos.egl.EGLConfig
 import javax.microedition.khronos.opengles.GL10
 
@@ -53,6 +54,8 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         0.8f,   // Уран
         0.7f    // Нептун
     )
+
+    private var selectedPlanetIndex = 0
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         GLES20.glClearColor(0f, 0f, 0f, 1f)
@@ -116,11 +119,11 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         angleX += 1f
         sunRotationAngle += 0.3f // Увеличение угла вращения Солнца
 
-        // Модельно-видовая-пространственная матрица
-        //Matrix.multiplyMM(mvpMatrix, 0, projectionMatrix, 0, viewMatrix, 0)
+        // Отрисовка Меркурия и куба, если он выбран
+        drawPlanetWithCube(mercury, planetRotations[0], planetDistances[0], angleX, 0f, planetScales[0], 0)
 
-        drawPlanet(mercury, planetRotations[0], planetDistances[0], angleX, 0f, planetScales[0])
-        drawPlanet(venus, -planetRotations[1], planetDistances[1], angleX, 0f, planetScales[1])
+        // Отрисовка Венеры и куба, если он выбран
+        drawPlanetWithCube(venus, -planetRotations[1], planetDistances[1], angleX, 0f, planetScales[1], 1)
 
         // Матрица Земли
         val earthMatrix = FloatArray(16)
@@ -136,17 +139,18 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         Matrix.multiplyMM(earthFinalMatrix, 0, viewMatrix, 0, earthMatrix, 0)
         Matrix.multiplyMM(earthFinalMatrix, 0, projectionMatrix, 0, earthFinalMatrix, 0)
 
-        // Отрисовка Земли
-        drawPlanet(earth, planetRotations[2], planetDistances[2], angleX, 0f, planetScales[2])
+        // Отрисовка Земли и куба, если он выбран
+        drawPlanetWithCube(earth, planetRotations[2], planetDistances[2], angleX, 0f, planetScales[2], 2)
+
         // Отрисовка Луны
         drawMoonPerpendicularToEcliptic(earthMatrix, angleX)
 
         // Остальные планеты
-        drawPlanet(mars, planetRotations[3], planetDistances[3], angleX, 0f, planetScales[3])
-        drawPlanet(saturn, planetRotations[4], planetDistances[5], angleX, 0f, planetScales[4])
-        drawPlanet(jupiter, planetRotations[5], planetDistances[4], angleX, 0f, planetScales[5])
-        drawPlanet(neptune, planetRotations[6], planetDistances[6], angleX, 0f, planetScales[6])
-        drawPlanet(uranus, -planetRotations[7], planetDistances[7], angleX, 0f, planetScales[7])
+        drawPlanetWithCube(mars, planetRotations[3], planetDistances[3], angleX, 0f, planetScales[3], 3)
+        drawPlanetWithCube(saturn, planetRotations[4], planetDistances[5], angleX, 0f, planetScales[4], 5)
+        drawPlanetWithCube(jupiter, planetRotations[5], planetDistances[4], angleX, 0f, planetScales[5], 4)
+        drawPlanetWithCube(neptune, planetRotations[6], planetDistances[6], angleX, 0f, planetScales[6], 6)
+        drawPlanetWithCube(uranus, -planetRotations[7], planetDistances[7], angleX, 0f, planetScales[7], 7)
 
         // Отрисовка Солнца
         val sunMatrix = FloatArray(16)
@@ -157,6 +161,81 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         Matrix.multiplyMM(sunMatrix, 0, viewMatrix, 0, sunMatrix, 0)
         Matrix.multiplyMM(sunMatrix, 0, projectionMatrix, 0, sunMatrix, 0)
         sunCircle.draw(sunMatrix)
+    }
+
+    private fun drawPlanetWithCube(planet: TexturedSphere, rotationSpeed: Float, distanceFromSun: Float, angle: Float, depthZ: Float, scale: Float, planetIndex: Int) {
+        // Матрица для каждой планеты
+        val planetMatrix = FloatArray(16)
+        Matrix.setIdentityM(planetMatrix, 0)
+
+        // Перемещение на расстояние от Солнца
+        Matrix.translateM(planetMatrix, 0, 0f, 0f, depthZ) // Разные глубины для планет
+
+        // Вращение планеты вокруг Солнца
+        Matrix.rotateM(planetMatrix, 0, angle * rotationSpeed, 0f, 1f, 0f)
+
+        // Перемещение планеты на нужное расстояние от Солнца
+        Matrix.translateM(planetMatrix, 0, distanceFromSun, 0f, 0f)
+
+        // Масштабирование планеты (увеличение размера)
+        Matrix.scaleM(planetMatrix, 0, scale, scale, scale)
+
+        // Умножение на видовую матрицу
+        Matrix.multiplyMM(planetMatrix, 0, viewMatrix, 0, planetMatrix, 0)
+
+        // Умножение на проекционную матрицу
+        Matrix.multiplyMM(planetMatrix, 0, projectionMatrix, 0, planetMatrix, 0)
+
+        // Отрисовка планеты
+        planet.draw(planetMatrix)
+
+        // Если эта планета выбрана, отрисовываем куб
+        if (planetIndex == selectedPlanetIndex) {
+            val cubeMatrix = FloatArray(16)
+            Matrix.setIdentityM(cubeMatrix, 0)
+
+            // Перемещение куба на расстояние от планеты
+            Matrix.translateM(cubeMatrix, 0, 0f, 0f, 0f) // Расстояние от планеты
+
+            // Умножение на матрицу планеты
+            Matrix.multiplyMM(cubeMatrix, 0, planetMatrix, 0, cubeMatrix, 0)
+
+            // Масштабирование куба
+            Matrix.scaleM(cubeMatrix, 0, 1f, 1f, 1f) // Уменьшение размера куба
+
+            // Умножение на видовую и проекционную матрицы
+            //Matrix.multiplyMM(cubeMatrix, 0, viewMatrix, 0, cubeMatrix, 0)
+            //Matrix.multiplyMM(cubeMatrix, 0, projectionMatrix, 0, cubeMatrix, 0)
+
+            // Отрисовка куба
+            val cube = Cube(context)
+            cube.draw(cubeMatrix)
+        }
+    }
+
+    fun selectNextPlanet() {
+        selectedPlanetIndex = (selectedPlanetIndex + 1) % 8
+    }
+
+    fun selectPreviousPlanet() {
+        selectedPlanetIndex = (selectedPlanetIndex - 1 + 8) % 8
+    }
+
+    fun showPlanetInfo() {
+        val planetName = when (selectedPlanetIndex) {
+            0 -> "Меркурий"
+            1 -> "Венера"
+            2 -> "Земля"
+            3 -> "Марс"
+            4 -> "Юпитер"
+            5 -> "Сатурн"
+            6 -> "Уран"
+            7 -> "Нептун"
+            else -> "Неизвестная планета"
+        }
+
+        // Пример отображения информации через Toast
+        Toast.makeText(context, "Информация о планете: $planetName", Toast.LENGTH_SHORT).show()
     }
 
     private fun drawMoonPerpendicularToEcliptic(earthMatrix: FloatArray, angle: Float) {
