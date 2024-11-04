@@ -15,7 +15,7 @@ class MoonRenderer(private val context: Context) : GLSurfaceView.Renderer {
     private val viewMatrix = FloatArray(16)
     private val mvpMatrix = FloatArray(16)
     private val mvMatrix = FloatArray(16)
-    private val lightPos = floatArrayOf(5.0f, 5.0f, 0f) // Позиция источника света
+    private val lightPos = floatArrayOf(0f, 0f, 10f) // Позиция источника света
     private lateinit var lightSphere: TexturedSphere
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
@@ -28,8 +28,8 @@ class MoonRenderer(private val context: Context) : GLSurfaceView.Renderer {
         moon.loadTexture(R.drawable.moon)
 
         // Инициализация лампы
-        lightSphere = TexturedSphere(context, 0.1f, 10, 10)
-        lightSphere.loadTexture(R.drawable.lamp) // Загрузка текстуры для лампы
+        //lightSphere = TexturedSphere(context, 0.5f, 20, 10)
+        //lightSphere.loadTexture(R.drawable.lamp) // Загрузка текстуры для лампы
     }
 
     override fun onDrawFrame(gl: GL10?) {
@@ -43,11 +43,11 @@ class MoonRenderer(private val context: Context) : GLSurfaceView.Renderer {
         moon.draw(mvpMatrix)
 
         // Отрисовка лампы
-        val lightMvpMatrix = FloatArray(16)
-        Matrix.setIdentityM(lightMvpMatrix, 0)
-        Matrix.translateM(lightMvpMatrix, 0, lightPos[0], lightPos[1], lightPos[2])
-        Matrix.multiplyMM(lightMvpMatrix, 0, mvpMatrix, 0, lightMvpMatrix, 0)
-        lightSphere.draw(lightMvpMatrix)
+        //val lightMvpMatrix = FloatArray(16)
+        //Matrix.setIdentityM(lightMvpMatrix, 0)
+        //Matrix.translateM(lightMvpMatrix, 0, lightPos[0], lightPos[1], lightPos[2])
+        //Matrix.multiplyMM(lightMvpMatrix, 0, mvpMatrix, 0, lightMvpMatrix, 0)
+        //lightSphere.draw(lightMvpMatrix)
 
     }
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {

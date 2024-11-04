@@ -7,4 +7,8 @@
     <color name="teal_700">#FF018786</color>
     <color name="black">#FF000000</color>
     <color name="white">#FFFFFFFF</color>
+    <color name="space_text">#b8aff0</color>
+    <color name="space_background">#130a45</color>
+    <color name="space_button">#5d17ed</color>
+    <color name="space_button_text">#e9ed8d</color>
 </resources>

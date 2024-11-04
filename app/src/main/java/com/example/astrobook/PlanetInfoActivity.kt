@@ -2,12 +2,14 @@
 package com.example.astrobook
 
 import android.app.Activity
+import android.graphics.Typeface
 import android.os.Bundle
 import android.view.ViewGroup
 import android.widget.ImageView
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.appcompat.app.AppCompatActivity
+import androidx.core.content.ContextCompat
 
 class PlanetInfoActivity : Activity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -24,6 +26,7 @@ class PlanetInfoActivity : Activity() {
                 ViewGroup.LayoutParams.MATCH_PARENT
             )
             setPadding(16, 16, 16, 16)
+            setBackgroundColor(ContextCompat.getColor(this@PlanetInfoActivity, R.color.space_background))
         }
 
         // Создаем ImageView для изображения планеты
@@ -43,7 +46,9 @@ class PlanetInfoActivity : Activity() {
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
             setPadding(0, 16, 0, 0)
-            textSize = 16f
+            textSize = 18f
+            typeface = Typeface.SERIF
+            setTextColor(ContextCompat.getColor(this@PlanetInfoActivity, R.color.space_text))
         }
 
         // Устанавливаем изображение и описание в зависимости от индекса планеты

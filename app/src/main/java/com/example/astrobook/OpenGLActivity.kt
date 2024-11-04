@@ -1,5 +1,6 @@
 package com.example.astrobook
 
+import android.annotation.SuppressLint
 import android.app.Activity
 import android.opengl.GLSurfaceView
 import android.os.Bundle
@@ -8,12 +9,14 @@ import android.view.View
 import android.widget.Button
 import android.widget.FrameLayout
 import android.widget.LinearLayout
+import androidx.compose.ui.graphics.Color
 
 class OpenGLActivity : Activity() {
 
     private lateinit var glSurfaceView: GLSurfaceView
     private lateinit var renderer: OpenGLRenderer
 
+    @SuppressLint("ResourceAsColor")
     override fun onCreate(savedInstanceState: Bundle?) {
         super.onCreate(savedInstanceState)
 
@@ -43,14 +46,19 @@ class OpenGLActivity : Activity() {
             ).apply {
                 gravity = Gravity.BOTTOM or Gravity.START
                 setMargins(16, 0, 0, 16)
+                setTextColor(R.color.space_button_text)
             }
             setOnClickListener {
                 renderer.selectPreviousPlanet()
             }
+            setBackgroundColor(resources.getColor(R.color.space_button))
+            setTextColor(resources.getColor(R.color.space_button_text))
+
         }
 
         val buttonRight = Button(this).apply {
             text = "Вправо"
+            setTextColor(R.color.space_button_text)
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT
@@ -61,6 +69,9 @@ class OpenGLActivity : Activity() {
             setOnClickListener {
                 renderer.selectNextPlanet()
             }
+            setBackgroundColor(resources.getColor(R.color.space_button))
+            setTextColor(resources.getColor(R.color.space_button_text))
+
         }
 
         val buttonInfo = Button(this).apply {
@@ -75,6 +86,8 @@ class OpenGLActivity : Activity() {
             setOnClickListener {
                 renderer.showPlanetInfo()
             }
+            setBackgroundColor(resources.getColor(R.color.space_button))
+            setTextColor(resources.getColor(R.color.space_button_text))
         }
 
         // Добавляем кнопки в контейнер

@@ -52,8 +52,8 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         0.7f,   // Марс
         1.1f,   // Юпитер
         1.0f,   // Сатурн
-        0.9f,   // Уран
-        0.8f    // Нептун
+        0.8f,   // Уран
+        0.9f    // Нептун
     )
 
     private var selectedPlanetIndex = 0
@@ -150,8 +150,8 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         drawPlanetWithCube(mars, planetRotations[3], planetDistances[3], angleX, 0f, planetScales[3], 3)
         drawPlanetWithCube(saturn, planetRotations[4], planetDistances[5], angleX, 0f, planetScales[4], 5)
         drawPlanetWithCube(jupiter, planetRotations[5], planetDistances[4], angleX, 0f, planetScales[5], 4)
-        drawPlanetWithCube(neptune, planetRotations[6], planetDistances[6], angleX, 0f, planetScales[6], 6)
-        drawPlanetWithCube(uranus, -planetRotations[7], planetDistances[7], angleX, 0f, planetScales[7], 7)
+        drawPlanetWithCube(uranus, -planetRotations[6], planetDistances[6], angleX, 0f, planetScales[6], 6)
+        drawPlanetWithCube(neptune, planetRotations[7], planetDistances[7], angleX, 0f, planetScales[7], 7)
 
         // Отрисовка Солнца
         val sunMatrix = FloatArray(16)
@@ -203,6 +203,8 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
             // Масштабирование куба
             Matrix.scaleM(cubeMatrix, 0, 1f, 1f, 1f) // Уменьшение размера куба
+
+            Matrix.rotateM(cubeMatrix, 0, angle * 1f, 0f, 1f, 1f)
 
             // Отрисовка куба
             val cube = Cube(context)
