@@ -1,3 +1,11 @@
 <resources>
     <string name="app_name">AstroBook</string>
+    <string name="mercury_description">Меркурий — самая близкая к Солнцу планета.</string>
+    <string name="venus_description">Венера — вторая планета от Солнца.</string>
+    <string name="earth_description">Земля — третья планета от Солнца.</string>
+    <string name="mars_description">Марс — четвертая планета от Солнца.</string>
+    <string name="jupiter_description">Юпитер — пятая планета от Солнца.</string>
+    <string name="saturn_description">Сатурн — шестая планета от Солнца.</string>
+    <string name="uranus_description">Уран — седьмая планета от Солнца.</string>
+    <string name="neptune_description">Нептун — восьмая планета от Солнца.</string>
 </resources>

@@ -82,7 +82,7 @@ class TexturedSphere(
     private val textureHandle = IntArray(1)
     private val indices: ShortArray
     private val normalBuffer: FloatBuffer
-    private val lightPos = floatArrayOf(0.0f, 0.0f, 5.0f) // Позиция источника света
+    private val lightPos = floatArrayOf(0.0f, 5.0f, 0.0f) // Позиция источника света
 
     init {
         val vertices = generateSphereVertices(radius, segments, rings)

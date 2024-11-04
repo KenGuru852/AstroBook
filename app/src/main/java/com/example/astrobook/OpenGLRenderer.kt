@@ -46,14 +46,14 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
     )
 
     private val planetScales = floatArrayOf(
-        0.4f,   // Меркурий
-        0.5f,   // Венера
-        0.55f,  // Земля
-        0.6f,   // Марс
-        1.0f,   // Юпитер
-        0.9f,   // Сатурн
-        0.8f,   // Уран
-        0.7f    // Нептун
+        0.5f,   // Меркурий
+        0.6f,   // Венера
+        0.65f,  // Земля
+        0.7f,   // Марс
+        1.1f,   // Юпитер
+        1.0f,   // Сатурн
+        0.9f,   // Уран
+        0.8f    // Нептун
     )
 
     private var selectedPlanetIndex = 0
@@ -65,36 +65,36 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
         // Инициализация фона и объектов
         square = Square(context)
-        sunCircle = TexturedSphere(context, 0.8f, 80, 40) // Уменьшение размера Солнца
+        sunCircle = TexturedSphere(context, 1.0f, 80, 40) // Уменьшение размера Солнца
 
         // Инициализация планет с радиусами и текстурами
-        mars = TexturedSphere(context, 0.5f, 40, 20)
+        mars = TexturedSphere(context, 0.7f, 40, 20)
         mars.loadTexture(R.drawable.kmars)
 
-        saturn = TexturedSphere(context, 0.8f, 60, 30)
+        saturn = TexturedSphere(context, 1.0f, 60, 30)
         saturn.loadTexture(R.drawable._ksaturn)
 
-        jupiter = TexturedSphere(context, 1.2f, 80, 40)
+        jupiter = TexturedSphere(context, 1.1f, 80, 40)
         jupiter.loadTexture(R.drawable.kjupiter)
 
-        neptune = TexturedSphere(context, 0.6f, 60, 30)
+        neptune = TexturedSphere(context, 0.8f, 60, 30)
         neptune.loadTexture(R.drawable._kneptune)
 
-        uranus = TexturedSphere(context, 0.7f, 60, 30)
+        uranus = TexturedSphere(context, 0.9f, 60, 30)
         uranus.loadTexture(R.drawable.kuranus)
 
         // Инициализация новых планет
-        mercury = TexturedSphere(context, 0.3f, 30, 15)
+        mercury = TexturedSphere(context, 0.5f, 30, 15)
         mercury.loadTexture(R.drawable._k_mercury)
 
-        venus = TexturedSphere(context, 0.4f, 35, 18)
+        venus = TexturedSphere(context, 0.6f, 35, 18)
         venus.loadTexture(R.drawable._k_venus_surface)
 
-        earth = TexturedSphere(context, 0.45f, 40, 20)
+        earth = TexturedSphere(context, 0.65f, 40, 20)
         earth.loadTexture(R.drawable.earth)
 
         // Инициализация Луны
-        moon = TexturedSphere(context, 0.1f, 20, 10)  // Луна маленькая
+        moon = TexturedSphere(context, 0.4f, 20, 10)  // Луна маленькая
         moon.loadTexture(R.drawable.moon)  // Замените на свою текстуру Луны
     }
 
@@ -118,7 +118,7 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
         // Увеличение угла вращения
         angleX += 1f
-        sunRotationAngle += 0.3f // Увеличение угла вращения Солнца
+        sunRotationAngle += 0.2f // Увеличение угла вращения Солнца
 
         // Отрисовка Меркурия и куба, если он выбран
         drawPlanetWithCube(mercury, planetRotations[0], planetDistances[0], angleX, 0f, planetScales[0], 0)
@@ -236,8 +236,10 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
             val intent = Intent(context, MoonActivity::class.java)
             context.startActivity(intent)
         } else {
-            // Пример отображения информации через Toast
-            Toast.makeText(context, "Информация о планете: $planetName", Toast.LENGTH_SHORT).show()
+            val intent = Intent(context, PlanetInfoActivity::class.java).apply {
+                putExtra("planetIndex", selectedPlanetIndex)
+            }
+            context.startActivity(intent)
         }
     }
 
@@ -263,7 +265,7 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         Matrix.multiplyMM(moonMatrix, 0, projectionMatrix, 0, moonMatrix, 0)
 
         // Масштабирование Луны
-        Matrix.scaleM(moonMatrix, 0, 0.1f, 0.1f, 0.1f)
+        Matrix.scaleM(moonMatrix, 0, 0.4f, 0.4f, 0.4f)
 
         // Отрисовка Луны
         moon.draw(moonMatrix)
