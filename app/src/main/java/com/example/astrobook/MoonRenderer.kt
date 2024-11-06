@@ -9,13 +9,14 @@ import javax.microedition.khronos.opengles.GL10
 
 class MoonRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
-    private lateinit var moon: TexturedSphere
+    private lateinit var moon: MoonTextureFong
 
     private val projectionMatrix = FloatArray(16)
     private val viewMatrix = FloatArray(16)
     private val mvpMatrix = FloatArray(16)
     private val mvMatrix = FloatArray(16)
-    private val lightPos = floatArrayOf(0.0f, 0.0f, 5.0f) // Позиция источника света
+    private val lightPos = floatArrayOf(0.0f, 5.0f, 0.0f) // Позиция источника света над центром Луны
+    private val viewPos = floatArrayOf(0.0f, 5.0f, 0.0f) // Позиция наблюдателя
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
         GLES20.glClearColor(0f, 0f, 0f, 1f)
@@ -23,7 +24,7 @@ class MoonRenderer(private val context: Context) : GLSurfaceView.Renderer {
         GLES20.glDepthFunc(GLES20.GL_LEQUAL)
 
         // Инициализация Луны
-        moon = TexturedSphere(context, 0.3f, 20, 10)
+        moon = MoonTextureFong(context, 0.3f, 20, 10)
         moon.loadTexture(R.drawable.moon)
     }
 
@@ -32,9 +33,10 @@ class MoonRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
         Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, 1f, 0f, 0f, 0f, 0f, 1f, 1f)
         Matrix.multiplyMM(mvpMatrix, 0, projectionMatrix, 0, viewMatrix, 0)
+        Matrix.multiplyMM(mvMatrix, 0, viewMatrix, 0, mvpMatrix, 0)
 
         // Отрисовка Луны с освещением по модели Фонга
-        moon.draw(mvpMatrix)
+        moon.draw(mvpMatrix, mvMatrix)
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
