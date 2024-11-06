@@ -13,6 +13,8 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
     private lateinit var square: Square
     private lateinit var sunCircle: TexturedSphere
+    private lateinit var blackHole: BlackHole
+    private lateinit var blackHoleBorder: BlackHoleBorder
 
     // Объекты планет
     private lateinit var mars: TexturedSphere
@@ -66,6 +68,8 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         // Инициализация фона и объектов
         square = Square(context)
         sunCircle = TexturedSphere(context, 1.0f, 80, 40) // Уменьшение размера Солнца
+        blackHole = BlackHole(context)
+        blackHoleBorder = BlackHoleBorder(context)
 
         // Инициализация планет с радиусами и текстурами
         mars = TexturedSphere(context, 0.7f, 40, 20)
@@ -162,6 +166,20 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         Matrix.multiplyMM(sunMatrix, 0, viewMatrix, 0, sunMatrix, 0)
         Matrix.multiplyMM(sunMatrix, 0, projectionMatrix, 0, sunMatrix, 0)
         sunCircle.draw(sunMatrix)
+
+        // Обновление позиции черной дыры
+        blackHole.updatePosition()
+
+        // Отрисовка черной дыры
+        val blackHoleMatrix = FloatArray(16)
+        Matrix.setIdentityM(blackHoleMatrix, 0)
+        Matrix.translateM(blackHoleMatrix, 0, blackHole.getPositionX(), blackHole.getPositionY(), blackHole.getPositionZ()) // Позиция черной дыры
+        Matrix.multiplyMM(blackHoleMatrix, 0, viewMatrix, 0, blackHoleMatrix, 0)
+        Matrix.multiplyMM(blackHoleMatrix, 0, projectionMatrix, 0, blackHoleMatrix, 0)
+        blackHole.draw(blackHoleMatrix)
+
+        // Отрисовка границы черной дыры
+        blackHoleBorder.draw(blackHoleMatrix)
     }
 
     private fun drawPlanetWithCube(planet: TexturedSphere, rotationSpeed: Float, distanceFromSun: Float, angle: Float, depthZ: Float, scale: Float, planetIndex: Int) {
