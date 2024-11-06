@@ -57,19 +57,19 @@ class OpenGLActivity : Activity() {
         }
 
         val buttonRight = Button(this).apply {
-            text = "Вправо"
-            setTextColor(R.color.space_button_text)
-            layoutParams = FrameLayout.LayoutParams(
-                FrameLayout.LayoutParams.WRAP_CONTENT,
-                FrameLayout.LayoutParams.WRAP_CONTENT
-            ).apply {
-                gravity = Gravity.BOTTOM or Gravity.END
-                setMargins(0, 0, 16, 16)
-            }
-            setOnClickListener {
-                renderer.selectNextPlanet()
-            }
-            setBackgroundColor(resources.getColor(R.color.space_button))
+                text = "Вправо"
+                setTextColor(R.color.space_button_text)
+                layoutParams = FrameLayout.LayoutParams(
+                    FrameLayout.LayoutParams.WRAP_CONTENT,
+                    FrameLayout.LayoutParams.WRAP_CONTENT
+                ).apply {
+                    gravity = Gravity.BOTTOM or Gravity.END
+                    setMargins(0, 0, 16, 16)
+                }
+                setOnClickListener {
+                    renderer.selectNextPlanet()
+                }
+                setBackgroundColor(resources.getColor(R.color.space_button))
             setTextColor(resources.getColor(R.color.space_button_text))
 
         }

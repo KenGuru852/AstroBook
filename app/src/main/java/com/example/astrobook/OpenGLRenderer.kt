@@ -234,7 +234,10 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
             else -> "Неизвестная планета"
         }
 
-        if (selectedPlanetIndex == 8) { // Предположим, что Луна имеет индекс 8
+        if (selectedPlanetIndex == 7) { // Нептун
+            val intent = Intent(context, NeptuneInfoActivity::class.java)
+            context.startActivity(intent)
+        } else if (selectedPlanetIndex == 8) { // Луна
             val intent = Intent(context, MoonActivity::class.java)
             context.startActivity(intent)
         } else {

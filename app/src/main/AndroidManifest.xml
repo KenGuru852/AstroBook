@@ -27,6 +27,7 @@
         <activity android:name=".OpenGLActivity" />
         <activity android:name=".MoonActivity" />
         <activity android:name=".PlanetInfoActivity" />
+        <activity android:name=".NeptuneInfoActivity" />
     </application>
 
 </manifest>
