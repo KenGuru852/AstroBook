@@ -158,7 +158,7 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         Matrix.setIdentityM(sunMatrix, 0)
         Matrix.translateM(sunMatrix, 0, 0f, 0f, 0f) // Солнце в центре
         Matrix.rotateM(sunMatrix, 0, sunRotationAngle, 0f, 1f, 0f) // Вращение Солнца вокруг своей оси
-        Matrix.scaleM(sunMatrix, 0, 2.5f, 2.5f, 2.5f) // Уменьшение размера Солнца
+        Matrix.scaleM(sunMatrix, 0, 2.5f * 2, 2.5f * 2, 2.5f * 2) // Увеличение в 2 раза
         Matrix.multiplyMM(sunMatrix, 0, viewMatrix, 0, sunMatrix, 0)
         Matrix.multiplyMM(sunMatrix, 0, projectionMatrix, 0, sunMatrix, 0)
         sunCircle.draw(sunMatrix)
@@ -179,7 +179,7 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         Matrix.translateM(planetMatrix, 0, distanceFromSun, 0f, 0f)
 
         // Масштабирование планеты (увеличение размера)
-        Matrix.scaleM(planetMatrix, 0, scale, scale, scale)
+        Matrix.scaleM(planetMatrix, 0, scale * 2, scale * 2, scale * 2) // Увеличение в 2 раза
 
         // Умножение на видовую матрицу
         Matrix.multiplyMM(planetMatrix, 0, viewMatrix, 0, planetMatrix, 0)
@@ -263,7 +263,7 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         Matrix.multiplyMM(moonMatrix, 0, projectionMatrix, 0, moonMatrix, 0)
 
         // Масштабирование Луны
-        Matrix.scaleM(moonMatrix, 0, 0.1f, 0.1f, 0.1f)
+        Matrix.scaleM(moonMatrix, 0, 0.1f * 2, 0.1f * 2, 0.1f * 2) // Увеличение в 2 раза
 
         // Отрисовка Луны
         moon.draw(moonMatrix)

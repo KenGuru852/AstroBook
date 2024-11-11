@@ -36,7 +36,7 @@ class OpenGLActivity : Activity() {
 
         // Создаем кнопки
         val buttonLeft = Button(this).apply {
-            text = "Влево"
+            text = "Назад"
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT
@@ -47,10 +47,13 @@ class OpenGLActivity : Activity() {
             setOnClickListener {
                 renderer.selectPreviousPlanet()
             }
+            setBackgroundResource(R.drawable.button_background)
+            setTextColor(resources.getColor(android.R.color.white))
+            textSize = 16f
         }
 
         val buttonRight = Button(this).apply {
-            text = "Вправо"
+            text = "Вперёд"
             layoutParams = FrameLayout.LayoutParams(
                 FrameLayout.LayoutParams.WRAP_CONTENT,
                 FrameLayout.LayoutParams.WRAP_CONTENT
@@ -61,6 +64,9 @@ class OpenGLActivity : Activity() {
             setOnClickListener {
                 renderer.selectNextPlanet()
             }
+            setBackgroundResource(R.drawable.button_background)
+            setTextColor(resources.getColor(android.R.color.white))
+            textSize = 16f
         }
 
         val buttonInfo = Button(this).apply {
@@ -75,6 +81,9 @@ class OpenGLActivity : Activity() {
             setOnClickListener {
                 renderer.showPlanetInfo()
             }
+            setBackgroundResource(R.drawable.button_background)
+            setTextColor(resources.getColor(android.R.color.white))
+            textSize = 16f
         }
 
         // Добавляем кнопки в контейнер
