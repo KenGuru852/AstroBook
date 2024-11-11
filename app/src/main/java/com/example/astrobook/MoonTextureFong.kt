@@ -6,6 +6,7 @@ import android.graphics.BitmapFactory
 import android.opengl.GLUtils
 import android.util.Log
 import com.example.astrobook.R
+import com.example.astrobook.Square.Companion.loadShader
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
@@ -22,55 +23,61 @@ class MoonTextureFong(
 
     private val vertexShaderCode = """
     attribute vec4 vPosition;
-attribute vec3 vNormal;
-attribute vec2 aTexCoord;
-varying vec2 vTexCoord;
-varying vec3 vLighting;
-uniform mat4 uMVPMatrix;
-uniform mat4 uMVMatrix;
-uniform vec3 uLightPos;
-uniform vec3 uViewPos;
+    attribute vec3 vNormal;
+    attribute vec2 aTexCoord;
+    varying vec2 vTexCoord;
+    varying vec3 vLighting;
+    uniform mat4 uMVPMatrix;
+    uniform mat4 uMVMatrix;
+    uniform vec3 uLightPos;
+    uniform vec3 uViewPos;
+    uniform vec4 u_AmbientColor;
+    uniform vec4 u_DiffuseColor;
 
-void main() {
-    gl_Position = uMVPMatrix * vPosition;
-    vTexCoord = aTexCoord;
+    void main() {
+        gl_Position = uMVPMatrix * vPosition;
+        vTexCoord = aTexCoord;
 
-    // Вычисление освещения по модели Фонга
-    vec3 ambientLight = vec3(0.4, 0.4, 0.4); // Увеличиваем окружающий свет
-    vec3 directionalLightColor = vec3(1.0, 1.0, 1.0); // Увеличиваем диффузное освещение
-    vec3 specularLightColor = vec3(0.8, 0.8, 0.8); // Увеличиваем зеркальное освещение
+        // Вычисление освещения по модели Фонга
+        vec3 ambientLight = u_AmbientColor.rgb; // Используем переданный цвет окружающего света
+        vec3 directionalLightColor = u_DiffuseColor.rgb; // Используем переданный цвет диффузного света
+        vec3 specularLightColor = vec3(0.8, 0.8, 0.8); // Зеркальное освещение
 
-    vec3 normal = normalize((uMVMatrix * vec4(vNormal, 0.0)).xyz);
-    vec3 lightDirection = normalize(uLightPos - (uMVMatrix * vPosition).xyz);
-    vec3 viewDirection = normalize(uViewPos - (uMVMatrix * vPosition).xyz);
-    vec3 reflectDirection = reflect(-lightDirection, normal);
+        vec3 normal = normalize(mat3(uMVMatrix) * vNormal); // Нормаль в пространстве объекта
+        vec3 lightDirection = normalize(uLightPos - (uMVMatrix * vPosition).xyz);
+        vec3 viewDirection = normalize(uViewPos - (uMVMatrix * vPosition).xyz);
+        vec3 reflectDirection = reflect(-lightDirection, normal);
 
-    float diff = max(dot(normal, lightDirection), 0.0);
-    vec3 diffuse = diff * directionalLightColor;
+        float diff = max(dot(normal, lightDirection), 0.0);
+        vec3 diffuse = diff * directionalLightColor;
 
-    float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), 32.0);
-    vec3 specular = spec * specularLightColor;
+        float spec = pow(max(dot(viewDirection, reflectDirection), 0.0), 64.0); // Увеличиваем резкость блика
+        vec3 specular = spec * specularLightColor;
 
-    // Уменьшаем интенсивность света снизу
-    float intensity = max(dot(normal, vec3(0.0, 1.0, 0.0)), 1.0);
-    diffuse *= intensity;
-    specular *= intensity;
+        // Уменьшаем интенсивность света снизу
+        float intensity = max(dot(normal, vec3(0.0, 1.0, 0.0)), 1.0);
+        diffuse *= intensity;
+        specular *= intensity;
 
-    vLighting = ambientLight + diffuse + specular;
-}
-""".trimIndent()
+        vLighting = ambientLight + diffuse + specular;
+    }
+    """.trimIndent()
 
     private val fragmentShaderCode = """
     precision mediump float;
     varying vec2 vTexCoord;
     varying vec3 vLighting;
     uniform sampler2D uTexture;
-    
+
     void main() {
         vec4 texColor = texture2D(uTexture, vTexCoord);
-        gl_FragColor = vec4(texColor.rgb * vLighting, texColor.a);
+        vec3 hdrColor = texColor.rgb * vLighting * 2.0;
+
+        // Применение HDR освещения
+        vec3 mapped = hdrColor / (hdrColor + vec3(1.0));
+        gl_FragColor = vec4(mapped, texColor.a);
     }
-""".trimIndent()
+    """.trimIndent()
 
     private var program: Int
 
@@ -100,6 +107,8 @@ void main() {
     private val normalBuffer: FloatBuffer
     private val lightPos = floatArrayOf(0.0f, 5.0f, 0.0f) // Позиция источника света сверху
     private val viewPos = floatArrayOf(0.0f, 0.0f, 5.0f) // Позиция наблюдателя
+    private val ambientColor = floatArrayOf(0.2f, 0.2f, 0.2f, 1.0f) // Цвет окружающего света
+    private val diffuseColor = floatArrayOf(1.0f, 1.0f, 1.0f, 1.0f) // Цвет диффузного света
 
     init {
         val vertices = generateSphereVertices(radius, segments, rings)
@@ -200,6 +209,32 @@ void main() {
         val viewPosHandle = GLES20.glGetUniformLocation(program, "uViewPos")
         val textureUniformHandle = GLES20.glGetUniformLocation(program, "uTexture")
 
+        val ambientColorHandle = GLES20.glGetUniformLocation(program, "u_AmbientColor")
+        GLES20.glUniform4fv(
+            ambientColorHandle,
+            1,
+            floatArrayOf(
+                ambientColor[0] * 0.8f,
+                ambientColor[1] * 0.8f,
+                ambientColor[2] * 0.8f,
+                ambientColor[3]
+            ),
+            0
+        )
+
+        val diffuseColorHandle = GLES20.glGetUniformLocation(program, "u_DiffuseColor")
+        GLES20.glUniform4fv(
+            diffuseColorHandle,
+            1,
+            floatArrayOf(
+                diffuseColor[0] * 1.7f,
+                diffuseColor[1] * 1.7f,
+                diffuseColor[2] * 1.7f,
+                diffuseColor[3]
+            ),
+            0
+        )
+
         GLES20.glEnableVertexAttribArray(positionHandle)
         GLES20.glVertexAttribPointer(positionHandle, 3, GLES20.GL_FLOAT, false, 12, vertexBuffer)
 
@@ -217,7 +252,12 @@ void main() {
         GLES20.glBindTexture(GLES20.GL_TEXTURE_2D, textureHandle[0])
         GLES20.glUniform1i(textureUniformHandle, 0)
 
-        GLES20.glDrawElements(GLES20.GL_TRIANGLES, indices.size, GLES20.GL_UNSIGNED_SHORT, indexBuffer)
+        GLES20.glDrawElements(
+            GLES20.GL_TRIANGLES,
+            indices.size,
+            GLES20.GL_UNSIGNED_SHORT,
+            indexBuffer
+        )
 
         GLES20.glDisableVertexAttribArray(positionHandle)
         GLES20.glDisableVertexAttribArray(normalHandle)
@@ -264,20 +304,5 @@ void main() {
             }
         }
         return texCoords.toFloatArray()
-    }
-
-    private fun loadShader(type: Int, shaderCode: String): Int {
-        val shader = GLES20.glCreateShader(type)
-        GLES20.glShaderSource(shader, shaderCode)
-        GLES20.glCompileShader(shader)
-
-        val compileStatus = IntArray(1)
-        GLES20.glGetShaderiv(shader, GLES20.GL_COMPILE_STATUS, compileStatus, 0)
-        if (compileStatus[0] == 0) {
-            Log.e("OpenGL", "Shader compilation failed: ${GLES20.glGetShaderInfoLog(shader)}")
-            GLES20.glDeleteShader(shader)
-        }
-
-        return shader
     }
 }
