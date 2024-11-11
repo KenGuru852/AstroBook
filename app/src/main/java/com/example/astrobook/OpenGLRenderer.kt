@@ -33,7 +33,7 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
     private var angleX: Float = 0f
     private var sunRotationAngle: Float = 0f // Угол вращения Солнца
 
-    private val planetRotations = floatArrayOf(1.0f, 0.9f, 0.8f, 0.5f, 0.4f, 0.3f, 0.2f, 0.1f) // Скорости вращения планет
+    private val planetRotations = floatArrayOf(1.2f, 1.1f, 1.0f, 0.7f, 0.6f, 0.5f, 0.4f, 0.3f) // Скорости вращения планет
     private val planetDistances = floatArrayOf(
         3.2f,   // Меркурий - самая близкая
         3.7f,   // Венера
@@ -65,7 +65,7 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
         // Инициализация фона и объектов
         square = Square(context)
-        sunCircle = TexturedSphere(context, 0.8f, 80, 40) // Уменьшение размера Солнца
+        sunCircle = TexturedSphere(context, 1.2f, 80, 40) // Уменьшение размера Солнца
 
         // Инициализация планет с радиусами и текстурами
         mars = TexturedSphere(context, 0.5f, 40, 20)
@@ -158,7 +158,7 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         Matrix.setIdentityM(sunMatrix, 0)
         Matrix.translateM(sunMatrix, 0, 0f, 0f, 0f) // Солнце в центре
         Matrix.rotateM(sunMatrix, 0, sunRotationAngle, 0f, 1f, 0f) // Вращение Солнца вокруг своей оси
-        Matrix.scaleM(sunMatrix, 0, 2.5f * 2, 2.5f * 2, 2.5f * 2) // Увеличение в 2 раза
+        Matrix.scaleM(sunMatrix, 0, 2.5f * 1.2f, 2.5f * 1.2f, 2.5f * 1.2f) // Увеличение в 2 раза
         Matrix.multiplyMM(sunMatrix, 0, viewMatrix, 0, sunMatrix, 0)
         Matrix.multiplyMM(sunMatrix, 0, projectionMatrix, 0, sunMatrix, 0)
         sunCircle.draw(sunMatrix)
@@ -179,7 +179,7 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
         Matrix.translateM(planetMatrix, 0, distanceFromSun, 0f, 0f)
 
         // Масштабирование планеты (увеличение размера)
-        Matrix.scaleM(planetMatrix, 0, scale * 2, scale * 2, scale * 2) // Увеличение в 2 раза
+        Matrix.scaleM(planetMatrix, 0, scale, scale, scale)
 
         // Умножение на видовую матрицу
         Matrix.multiplyMM(planetMatrix, 0, viewMatrix, 0, planetMatrix, 0)
@@ -203,6 +203,8 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
 
             // Масштабирование куба
             Matrix.scaleM(cubeMatrix, 0, 1f, 1f, 1f) // Уменьшение размера куба
+
+            Matrix.rotateM(cubeMatrix, 0, angle * 1f, 0f, 1f, 1f)
 
             // Отрисовка куба
             val cube = Cube(context)
@@ -232,12 +234,27 @@ class OpenGLRenderer(private val context: Context) : GLSurfaceView.Renderer {
             else -> "Неизвестная планета"
         }
 
-        if (selectedPlanetIndex == 8) { // Предположим, что Луна имеет индекс 8
+        val planetInfo = when (selectedPlanetIndex) {
+            0 -> "Меркурий — ближайшая к Солнцу планета."
+            1 -> "Венера — вторая планета от Солнца."
+            2 -> "Земля — третья планета от Солнца."
+            3 -> "Марс — четвертая планета от Солнца."
+            4 -> "Юпитер — пятая планета от Солнца."
+            5 -> "Сатурн — шестая планета от Солнца."
+            6 -> "Уран — седьмая планета от Солнца."
+            7 -> "Нептун — восьмая планета от Солнца."
+            8 -> "Луна — естественный спутник Земли."
+            else -> "Информация недоступна."
+        }
+
+        if (selectedPlanetIndex == 8){
             val intent = Intent(context, MoonActivity::class.java)
             context.startActivity(intent)
         } else {
-            // Пример отображения информации через Toast
-            Toast.makeText(context, "Информация о планете: $planetName", Toast.LENGTH_SHORT).show()
+            val intent = Intent(context, PlanetInfoActivity::class.java)
+            intent.putExtra("PLANET_NAME", planetName)
+            intent.putExtra("PLANET_INFO", planetInfo)
+            context.startActivity(intent)
         }
     }
 

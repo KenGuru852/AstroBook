@@ -83,7 +83,7 @@ class OpenGLActivity : Activity() {
             }
             setBackgroundResource(R.drawable.button_background)
             setTextColor(resources.getColor(android.R.color.white))
-            textSize = 16f
+            textSize = 12f
         }
 
         // Добавляем кнопки в контейнер
