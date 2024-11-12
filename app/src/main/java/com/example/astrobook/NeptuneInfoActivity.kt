@@ -7,6 +7,7 @@ import android.view.ViewGroup
 import android.widget.LinearLayout
 import android.widget.TextView
 import androidx.core.content.ContextCompat
+import androidx.core.view.marginTop
 
 class NeptuneInfoActivity : Activity() {
 
@@ -38,19 +39,20 @@ class NeptuneInfoActivity : Activity() {
             ViewGroup.LayoutParams.MATCH_PARENT,
             ViewGroup.LayoutParams.WRAP_CONTENT
         )
-        glSurfaceViewParams.weight = 1f // Это позволяет GLSurfaceView занимать 50% высоты экрана
+        glSurfaceViewParams.weight = 0.5f // Это позволяет GLSurfaceView занимать 50% высоты экрана
         glSurfaceView.layoutParams = glSurfaceViewParams
 
         // Создаем TextView для описания Нептуна
         val neptuneDescription = TextView(this).apply {
             layoutParams = LinearLayout.LayoutParams(
-                ViewGroup.LayoutParams.MATCH_PARENT,
+                ViewGroup.LayoutParams.WRAP_CONTENT,
                 ViewGroup.LayoutParams.WRAP_CONTENT
             )
-            setPadding(0, 16, 0, 0)
+            setPadding(0, 0, 0, 300) // Увеличиваем верхний отступ на 15px
             textSize = 18f
             text = getString(R.string.neptune_description)
             setTextColor(ContextCompat.getColor(this@NeptuneInfoActivity, R.color.space_text))
+
         }
 
         // Добавляем GLSurfaceView и TextView в LinearLayout

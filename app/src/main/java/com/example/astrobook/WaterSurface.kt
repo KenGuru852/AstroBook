@@ -6,6 +6,8 @@ import android.opengl.GLUtils
 import java.nio.ByteBuffer
 import java.nio.ByteOrder
 import java.nio.FloatBuffer
+import kotlin.math.cos
+import kotlin.math.sin
 
 class WaterSurface(context: Context) {
 
@@ -56,21 +58,41 @@ class WaterSurface(context: Context) {
     }
 
     private fun createVertices(): FloatArray {
-        return floatArrayOf(
-            -1.0f, -1.0f, 0.0f,
-            1.0f, -1.0f, 0.0f,
-            -1.0f,  1.0f, 0.0f,
-            1.0f,  1.0f, 0.0f
-        )
+        val segments = 64 // Количество сегментов для круга
+        val vertices = mutableListOf<Float>()
+
+        vertices.add(0f) // Центр changing the Neptune Image (it was rectangular now round), changing the background in the OpenGL View of Neptuneкруга
+        vertices.add(0f)
+        vertices.add(0f)
+
+        for (i in 0..segments) {
+            val angle = 2.0 * Math.PI * i / segments
+            val x = cos(angle).toFloat()
+            val y = sin(angle).toFloat()
+            vertices.add(x)
+            vertices.add(y)
+            vertices.add(0f)
+        }
+
+        return vertices.toFloatArray()
     }
 
     private fun createTextureCoords(): FloatArray {
-        return floatArrayOf(
-            0.0f, 0.0f,
-            1.0f, 0.0f,
-            0.0f, 1.0f,
-            1.0f, 1.0f
-        )
+        val segments = 64 // Количество сегментов для круга
+        val textureCoords = mutableListOf<Float>()
+
+        textureCoords.add(0.5f) // Центр круга
+        textureCoords.add(0.5f)
+
+        for (i in 0..segments) {
+            val angle = 2.0 * Math.PI * i / segments
+            val u = 0.5f + 0.5f * cos(angle).toFloat()
+            val v = 0.5f + 0.5f * sin(angle).toFloat()
+            textureCoords.add(u)
+            textureCoords.add(v)
+        }
+
+        return textureCoords.toFloatArray()
     }
 
     fun draw(mvpMatrix: FloatArray, time: Float) {
@@ -100,7 +122,7 @@ class WaterSurface(context: Context) {
             GLES20.glUniform1i(it, 0)
         }
 
-        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_STRIP, 0, 4)
+        GLES20.glDrawArrays(GLES20.GL_TRIANGLE_FAN, 0, 66) // 1 центральная вершина + 64 сегмента + 1 дополнительная вершина для замыкания
 
         GLES20.glDisableVertexAttribArray(mPositionHandle)
         GLES20.glDisableVertexAttribArray(mTextureCoordHandle)
