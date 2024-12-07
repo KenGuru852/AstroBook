@@ -1,3 +1,4 @@
+// WaterSurfaceRenderer.kt
 package com.example.astrobook
 
 import android.content.Context
@@ -18,8 +19,7 @@ class WaterSurfaceRenderer(private val context: Context) : GLSurfaceView.Rendere
     private var time: Float = 0f
 
     override fun onSurfaceCreated(gl: GL10?, config: EGLConfig?) {
-        // Устанавливаем цвет очистки буфера цвета
-        GLES20.glClearColor(0.0745f, 0.0392f, 0.2706f, 1f) // Установите нужный цвет фона
+        GLES20.glClearColor(0.0745f, 0.0392f, 0.2706f, 1f)
         GLES20.glEnable(GLES20.GL_DEPTH_TEST)
         GLES20.glDepthFunc(GLES20.GL_LEQUAL)
 
@@ -28,15 +28,14 @@ class WaterSurfaceRenderer(private val context: Context) : GLSurfaceView.Rendere
     }
 
     override fun onDrawFrame(gl: GL10?) {
-        // Очищаем буфер цвета и буфер глубины
         GLES20.glClear(GLES20.GL_COLOR_BUFFER_BIT or GLES20.GL_DEPTH_BUFFER_BIT)
 
-        Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, 1.7f, 0f, 0f, 0f, 0f, 2f, 0f)
+        Matrix.setLookAtM(viewMatrix, 0, 0f, 0f, 3f, 0f, 0f, 0f, 0f, 1f, 0f)
         Matrix.multiplyMM(mvpMatrix, 0, projectionMatrix, 0, viewMatrix, 0)
 
-        // Анимация водной поверхности
+        // Анимация волн на поверхности сферы
         time += 0.03f
-        waterSurface.draw(mvpMatrix, time)
+        waterSurface.drawSphere(mvpMatrix, time)
     }
 
     override fun onSurfaceChanged(gl: GL10?, width: Int, height: Int) {
